@@ -1,36 +1,37 @@
-import psycopg2
 import pandas as pd
+from src.db import engine
+from sqlalchemy import inspect, text
 
-def send_sms(user_id, message):
-    print(f"[SMS] To: {user_id} | Message: {message}")
+def save_alerts(df: pd.DataFrame):
+    if "anomaly" not in df.columns:
+        return
 
-def save_alerts(df):
-    try:
-        conn = psycopg2.connect(
-            dbname="spending_db",
-            user="user",
-            password="password",
-            host="localhost",
-            port="5432"
-        )
-        cur = conn.cursor()
+    alerts = df[df["anomaly"] == -1].copy()
 
-        for _, row in df.iterrows():
-            alert_msg = f"⚠️ Unusual spending detected: {row['amount']} in {row['category']}"
+    # Mapping các cột nếu có
+    if "id" in alerts.columns:
+        alerts = alerts.rename(columns={"id": "transaction_id"})
+    if "timestamp" in alerts.columns:
+        alerts = alerts.rename(columns={"timestamp": "created_at"})
 
-            try:
-                cur.execute(
-                    "INSERT INTO alerts (user_id, alert_msg) VALUES (%s, %s)",
-                    (row["user_id"], alert_msg)
-                )
+    # Thêm message
+    alerts["alert_msg"] = "Giao dịch bất thường được phát hiện"
 
-                send_sms(row["user_id"], alert_msg)
+    # Kiểm tra bảng alerts có cột nào
+    insp = inspect(engine)
+    db_cols = [col["name"] for col in insp.get_columns("alerts")]
 
-            except Exception as e:
-                print("❌ Error inserting alert:", e)
+    # Chỉ giữ lại cột có trong DB
+    alerts = alerts[[c for c in alerts.columns if c in db_cols]]
 
-        conn.commit()
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print("❌ Database connection error:", e)
+    # Lưu vào DB
+    alerts.to_sql("alerts", engine, if_exists="append", index=False)
+
+    # Cleanup trùng lặp (giữ bản mới nhất theo ctid)
+    with engine.begin() as conn:
+        conn.execute(text("""
+            DELETE FROM alerts a
+            USING alerts b
+            WHERE a.ctid < b.ctid
+              AND a.* IS NOT DISTINCT FROM b.*
+        """))

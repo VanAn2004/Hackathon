@@ -20,9 +20,10 @@ def save_alerts(df):
 
             try:
                 cur.execute(
-                    "INSERT INTO alerts (user_id, message) VALUES (%s, %s)",
+                    "INSERT INTO alerts (user_id, alert_msg) VALUES (%s, %s)",
                     (row["user_id"], alert_msg)
                 )
+
                 send_sms(row["user_id"], alert_msg)
 
             except Exception as e:

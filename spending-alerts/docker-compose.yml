@@ -1,7 +1,7 @@
-version: "3.8"
+version: "3.9"
 
 services:
-  postgres:
+  db:
     image: postgres:14
     container_name: spending_postgres
     restart: always
@@ -11,5 +11,17 @@ services:
       POSTGRES_DB: spending_db
     ports:
       - "5432:5432"
-    volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: spending-alerts
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_NAME: spending_db
+      DB_USER: user
+      DB_PASSWORD: password

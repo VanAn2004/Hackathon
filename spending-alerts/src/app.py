@@ -21,3 +21,6 @@ def get_alerts():
     import pandas as pd
     df = pd.read_sql("SELECT * FROM alerts ORDER BY created_at DESC", engine)
     return df.to_dict(orient="records")
+
+# http://127.0.0.1:8000/run-anomaly
+#http://127.0.0.1:8000/alerts 

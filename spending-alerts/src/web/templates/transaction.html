@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MyBank - Send Money</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1e88e5;
+            --secondary-color: #1565c0;
+            --accent-color: #82b1ff;
+            --warning-color: #ff9800;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            color: white !important;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        .transfer-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(130, 177, 255, 0.25);
+        }
+        
+        .input-group-text {
+            background-color: transparent;
+            border: 2px solid #e0e0e0;
+            border-right: none;
+        }
+        
+        .input-group .form-control {
+            border-left: none;
+        }
+        
+        .btn-success {
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+        }
+
+        .modal-confirm {
+            color: #636363;
+            width: 400px;
+        }
+        .modal-confirm .modal-content {
+            padding: 20px;
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .modal-confirm .modal-header {
+            border-bottom: none;
+            position: relative;
+            justify-content: center;
+            padding: 30px 15px;
+            background: #fff3e0;
+            border-radius: 10px 10px 0 0;
+        }
+        .modal-confirm .icon-box {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            border-radius: 50%;
+            z-index: 9;
+            text-align: center;
+            border: 3px solid #f8bb86;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+        }
+        .modal-confirm .icon-box i {
+            font-size: 46px;
+            color: #f8bb86;
+        }
+        .modal-confirm .modal-title {
+            text-align: center;
+            font-size: 26px;
+            margin: 30px 0 -15px;
+        }
+        .modal-confirm .modal-body {
+            color: #999;
+            padding: 20px;
+        }
+        .modal-confirm .amount {
+            font-size: 24px;
+            color: #ff9800;
+            font-weight: 500;
+        }
+        .modal-confirm .recipient {
+            font-size: 16px;
+            color: #555;
+            margin-top: 10px;
+        }
+        .modal-confirm .modal-footer {
+            border: none;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 13px;
+            padding: 10px 15px 20px;
+            justify-content: center;
+            gap: 10px;
+        }
+        .modal-confirm .btn-confirm {
+            background: #ff9800;
+            border-color: #ff9800;
+            transition: all 0.3s ease;
+            min-width: 100px;
+            color: white;
+        }
+        .modal-confirm .btn-confirm:hover {
+            background: #f57c00;
+            border-color: #f57c00;
+            transform: translateY(-2px);
+        }
+        .modal-confirm .btn-cancel {
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-university me-2"></i>MyBank
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-home me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('transaction') }}">
+                            <i class="fas fa-paper-plane me-1"></i> Send Money
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('history') }}">
+                            <i class="fas fa-history me-1"></i> History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card transfer-card">
+                    <div class="card-body p-4">
+                        <h4 class="card-title mb-4">Send Money</h4>
+                        
+                        {% if alert %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ alert }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                        {% if category == 'success' %}
+                                            <i class="fas fa-check-circle me-2"></i>
+                                        {% elif category == 'danger' %}
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                        {% elif category == 'warning' %}
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                        {% endif %}
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <form method="post" id="transactionForm">
+                            <div class="mb-4">
+                                <label for="to_account" class="form-label">Recipient's Account Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="to_account" name="to_account" 
+                                           value="{{ to_account or '' }}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="amount" class="form-label">Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </span>
+                                    <input type="number" class="form-control" id="amount" name="amount" 
+                                           value="{{ amount or '' }}" required min="1" step="0.01">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="description" class="form-label">Description (Optional)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-comment"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="description" name="description" 
+                                           value="{{ description or '' }}" placeholder="What's this for?">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-paper-plane me-2"></i> Send Money
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-confirm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="icon-box">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <h4 class="modal-title">Large Transaction Alert</h4>
+                <div class="modal-body text-center">
+                    <p>You're about to make a transaction that exceeds the normal limit ($5,000).</p>
+                    <div class="amount my-3">$<span id="modalAmount">0</span></div>
+                    <div class="recipient">To: <span id="modalRecipient"></span></div>
+                    <p class="text-muted small mt-3">Please confirm if you want to proceed with this transaction.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-cancel" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-warning btn-confirm" id="confirmTransaction">
+                        <i class="fas fa-check me-2"></i>Proceed
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('transactionForm');
+            const amountInput = document.getElementById('amount');
+            const toAccountInput = document.getElementById('to_account');
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            const modalAmountSpan = document.getElementById('modalAmount');
+            const modalRecipientSpan = document.getElementById('modalRecipient');
+            const confirmButton = document.getElementById('confirmTransaction');
+            let isConfirmed = false;
+
+            form.addEventListener('submit', function(e) {
+                const amount = parseFloat(amountInput.value);
+                if (amount > 5000 && !isConfirmed) {  // Threshold check
+                    e.preventDefault();
+                    modalAmountSpan.textContent = amount.toLocaleString('en-US', { minimumFractionDigits: 2 });
+                    modalRecipientSpan.textContent = toAccountInput.value;
+                    confirmationModal.show();
+                }
+            });
+
+            confirmButton.addEventListener('click', function() {
+                isConfirmed = true;
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'confirm_anomaly';
+                hiddenInput.value = 'true';
+                form.appendChild(hiddenInput);
+                confirmationModal.hide();
+                form.submit();
+            });
+
+            confirmationModal.addEventListener('hidden.bs.modal', function() {
+                if (!isConfirmed) {
+                    isConfirmed = false;
+                }
+            });
+
+            // Format amount with commas as user types
+            amountInput.addEventListener('input', function(e) {
+                const value = this.value;
+                if (value) {
+                    const number = parseFloat(value);
+                    if (!isNaN(number)) {
+                        // Keep the original value for form submission
+                        this.dataset.value = number;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

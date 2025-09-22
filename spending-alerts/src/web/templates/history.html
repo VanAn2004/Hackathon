@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MyBank - Transaction History</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1e88e5;
+            --secondary-color: #1565c0;
+            --accent-color: #82b1ff;
+        }
+        
+        body {
+            background: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            color: white !important;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        .history-card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .transaction-item {
+            border-bottom: 1px solid #eee;
+            padding: 1.25rem 1rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .transaction-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .amount-positive {
+            color: #4caf50;
+            font-weight: 600;
+        }
+        
+        .amount-negative {
+            color: #f44336;
+            font-weight: 600;
+        }
+        
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e3f2fd;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-university me-2"></i>MyBank
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="fas fa-home me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('transaction') }}">
+                            <i class="fas fa-paper-plane me-1"></i> Send Money
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('history') }}">
+                            <i class="fas fa-history me-1"></i> History
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="card history-card">
+            <div class="card-body p-0">
+                <div class="p-4">
+                    <h4 class="card-title mb-0">Transaction History</h4>
+                </div>
+                
+                {% if transactions %}
+                    {% for transaction in transactions %}
+                        <div class="transaction-item">
+                            <div class="d-flex align-items-center">
+                                <div class="transaction-icon me-3">
+                                    <i class="fas fa-paper-plane"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="mb-0">Transfer to {{ transaction.to_account }}</h6>
+                                        <span class="amount-negative">-${{ "%.2f"|format(transaction.amount) }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            {{ transaction.timestamp.strftime('%B %d, %Y %H:%M') }}
+                                        </small>
+                                        <small class="text-muted">
+                                            Balance: ${{ "%.2f"|format(transaction.balance_after) }}
+                                        </small>
+                                    </div>
+                                    {% if transaction.description %}
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-comment-alt me-1"></i>
+                                            {{ transaction.description }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted my-5">
+                        <i class="fas fa-history fa-3x mb-3"></i>
+                        <p>No transactions yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
